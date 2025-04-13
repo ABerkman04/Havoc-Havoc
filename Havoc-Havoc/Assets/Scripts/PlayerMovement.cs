@@ -1,6 +1,7 @@
 using UnityEngine;
+using Mirror;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     public float moveSpeed;
     public Rigidbody2D rb;
@@ -10,12 +11,18 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ProcessInputs();
+        if (isLocalPlayer)
+        {
+            ProcessInputs();
+        }
     }
 
     void FixedUpdate()
     {
-        Move();
+        if (isLocalPlayer)
+        {
+            Move();
+        }
     }
 
     void ProcessInputs()
