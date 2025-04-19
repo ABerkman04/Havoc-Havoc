@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: BasicTilemap_0
+  m_Name: ForestTile
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 4098277788735069462, guid: 6cc34ace6c218a14c92a326067fc7677, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
