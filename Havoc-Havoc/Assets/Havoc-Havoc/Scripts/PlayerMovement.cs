@@ -30,6 +30,8 @@ public class PlayerMovement : NetworkBehaviour
         {
             ProcessInputs();
             CheckForNearbyChests();
+            CheckForNearbyPlayers();
+
         }
     }
 
@@ -56,34 +58,41 @@ public class PlayerMovement : NetworkBehaviour
 
     void CheckForNearbyChests()
     {
-        if (mapManager == null) return;
+        Vector3 playerWorldPosition = transform.position;
+        Vector3Int cellPosition = mapManager.map.WorldToCell(playerWorldPosition);
 
-        int range = mapManager.chestDetectionRange;
-        Vector3Int playerGridPos = mapManager.map.WorldToCell(transform.position);
+        TileBase tile = mapManager.map.GetTile(cellPosition);
 
-        for (int x = -range; x <= range; x++)
+        if (tile != null && mapManager.dataFromTiles.TryGetValue(tile, out TileData tileData))
         {
-            for (int y = -range; y <= range; y++)
-            {
-                Vector3Int checkPos = new Vector3Int(playerGridPos.x + x, playerGridPos.y + y, playerGridPos.z);
-                TileBase tile = mapManager.map.GetTile(checkPos);
+            mapManager.openButton.SetActive(tileData.chest);
+        }
+        else
+        {
+            mapManager.openButton.SetActive(false);
+        }
+    }
 
-                if (tile != null && mapManager.dataFromTiles.TryGetValue(tile, out TileData tileData))
+    public float detectionRange = 2f; // Set how close players must be
+
+    void CheckForNearbyPlayers()
+    {
+        foreach (var playerObj in FindObjectsOfType<PlayerMovement>())
+        {
+            if (playerObj != this) // skip self
+            {
+                float distance = Vector2.Distance(transform.position, playerObj.transform.position);
+                if (distance <= detectionRange)
                 {
-                    if (tileData.chest)
-                    {
-                        mapManager.openButton.SetActive(true);
-                        return;
-                    }
-                    else
-                    {
-                        mapManager.openButton.SetActive(false);
-                        return;
-                    }
+                    Debug.Log("Player nearby!");
+                    // You can trigger a UI prompt, outline effect, etc. here
+                    return; // optional: exit early if just need one detection
                 }
             }
         }
     }
+
+
 
 
 

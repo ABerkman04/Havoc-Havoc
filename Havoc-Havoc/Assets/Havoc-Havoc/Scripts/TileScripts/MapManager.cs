@@ -6,8 +6,6 @@ using UnityEngine.Tilemaps;
 
 public class MapManager : MonoBehaviour
 {
-    //Variables
-    public int chestDetectionRange = 10;
 
     //Refrences
     public GameObject openButton;
