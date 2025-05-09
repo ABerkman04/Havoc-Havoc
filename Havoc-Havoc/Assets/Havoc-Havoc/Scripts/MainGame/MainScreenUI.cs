@@ -14,6 +14,12 @@ public class MainScreenUI : MonoBehaviour
     public Text clientText;
     public Text ipText;
 
+    public void TestGame()
+    {
+        OnClickHost();
+        UIPanels.SetActive(false);
+    }
+
     private void Start()
     {
         string localIPv4 = null;
