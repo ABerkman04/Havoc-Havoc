@@ -37,15 +37,32 @@ public class NetworkManagerGame : NetworkManager
         GameObject player = Instantiate(playerPrefab, spawnPosition, spawnRotation);
         NetworkServer.AddPlayerForConnection(conn, player);
 
+        PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
+
+
+
         if (numPlayers == 1)
         {
             player1HostID = 1;
+            playerMovement.playerID = 1;
         }
 
         if (numPlayers == 2)
         {
             player2ClientID = 2;
-            Debug.Log("Both players have connected");
+            playerMovement.playerID = 2;
+
+            foreach (NetworkConnectionToClient connection in NetworkServer.connections.Values)
+            {
+                if (connection.identity != null)
+                {
+                    PlayerMovement pm = connection.identity.GetComponent<PlayerMovement>();
+                    if (pm.playerID == 1)
+                        pm.opponentID = 2;
+                    else if (pm.playerID == 2)
+                        pm.opponentID = 1;
+                }
+            }
 
             // THIS is the correct way
             gameManager = FindObjectOfType<GameManager>();
@@ -54,7 +71,7 @@ public class NetworkManagerGame : NetworkManager
                 Debug.LogError("GameManager not found!");
                 return;
             }
-            gameManager.StartGame();
+            gameManager.StartGame(player1HostID, player2ClientID);
         }
 
     }

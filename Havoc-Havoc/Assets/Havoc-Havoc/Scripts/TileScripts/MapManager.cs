@@ -10,6 +10,8 @@ public class MapManager : MonoBehaviour
     //Refrences
     public GameObject openButton;
 
+    public GameObject attackButton;
+
     //MapManager
     [SerializeField]
     public Tilemap map;

@@ -29,6 +29,17 @@ public class PlayerMovement : NetworkBehaviour
 
     private GameObject[] chosenWeapons = new GameObject[3];
 
+    public GameObject weaponSlot;
+    public Text weaponSlotText;
+    public Image weaponSlotImage;
+
+    [SyncVar]
+    public int playerID = -1;
+
+    [SyncVar]
+    public int opponentID = -1;
+
+
     void Start()
     {
         if (isLocalPlayer)
@@ -42,7 +53,12 @@ public class PlayerMovement : NetworkBehaviour
             weaponSlot2 = weaponManager.weaponSlot2;
             weaponSlot3 = weaponManager.weaponSlot3;
 
+            weaponSlot = weaponManager.weaponSlot;
+            weaponSlotText = weaponManager.weaponSlotText;
+            weaponSlotImage = weaponManager.weaponSlotImage;
+
             mapManager.openButton.GetComponent<Button>().onClick.AddListener(OnClickOpenChest);
+            mapManager.attackButton.GetComponent<Button>().onClick.AddListener(OnClickAttack);
         }
     }
 
@@ -54,6 +70,18 @@ public class PlayerMovement : NetworkBehaviour
         UpdateAnimations();
         CheckForNearbyChests();
         CheckForNearbyPlayers();
+        UpdateWeaponSlotUI();
+
+
+        if (playerID == 1)
+        {
+            Debug.Log("I am Player 1, enemy is Player " + opponentID);
+        }
+        else if (playerID == 2)
+        {
+            Debug.Log("I am Player 2, enemy is Player " + opponentID);
+        }
+
     }
 
     void FixedUpdate()
@@ -126,10 +154,15 @@ public class PlayerMovement : NetworkBehaviour
             if (playerObj != this)
             {
                 float distance = Vector2.Distance(transform.position, playerObj.transform.position);
-                if (distance <= detectionRange)
+                if (distance <= detectionRange && currentWeapon != null)
                 {
-                    Debug.Log("Player nearby!");
-                    return;
+                        mapManager.attackButton.SetActive(true);
+                        Debug.Log("Player nearby!");
+                        return;
+                }
+                else
+                {
+                    mapManager.attackButton.SetActive(false);
                 }
             }
         }
@@ -180,7 +213,30 @@ public class PlayerMovement : NetworkBehaviour
         // TODO: trigger your weapon equip logic here
     }
 
+    void UpdateWeaponSlotUI()
+    {
+        if (currentWeapon != null)
+        {
+            weaponSlot.SetActive(true);
+            WeaponObject weaponObj = currentWeapon.GetComponent<WeaponObject>();
+            weaponSlotText.text = weaponObj.weaponName;
+            weaponSlotImage.sprite = weaponObj.weaponSprite;
+        }
+        else
+        {
+            weaponSlot.SetActive(false);
+        }
+    }
 
-    //Eatch weapon slot has a button attached
-    //Also inside each weapon slot is a gameobject named "Name" where there is text for the name. And also gameobject "Image" that has a image for a sprite 
+    public void OnClickAttack()
+    {
+        CmdRequestDamagePlayer(opponentID);
+    }
+
+    [Command]
+    public void CmdRequestDamagePlayer(int opponentID)
+    {
+        FindObjectOfType<GameManager>().DamagePlayer(opponentID);
+    }
+
 }
