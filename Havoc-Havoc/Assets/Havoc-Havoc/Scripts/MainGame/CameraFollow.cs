@@ -34,7 +34,12 @@ public class CameraFollow : NetworkBehaviour
     {
         if (!isLocalPlayer || target == null) return;
 
+        // Only update position — keep rotation fixed
         Vector3 newPos = new Vector3(target.position.x, target.position.y, -10f);
         transform.position = Vector3.Slerp(transform.position, newPos, FollowSpeed * Time.deltaTime);
+
+        // Reset camera rotation so it's always fixed (same view)
+        transform.rotation = Quaternion.Euler(0f, 0f, 0f);
     }
+
 }

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ChestTileData
   m_EditorClassIdentifier: 
   tiles:
-  - {fileID: 11400000, guid: 6a77dcfcf7fd1cb4aa5378a2448324bf, type: 2}
+  - {fileID: 11400000, guid: 4b779932113b9e44c920a491b4063a6c, type: 2}
   walkingSpeed: 1
   chest: 1
