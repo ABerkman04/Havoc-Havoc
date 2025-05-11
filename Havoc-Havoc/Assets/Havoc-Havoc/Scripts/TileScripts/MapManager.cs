@@ -106,8 +106,29 @@ public class MapManager : NetworkBehaviour
         }
     }
 
+    public void DisableChests()
+    {
+        if (chestTilePositions.Count == 0) return;
 
-    public bool IsChestOpenableAt(Vector3Int pos)
+        // Hide all chests (visually and logically)
+        foreach (Vector3Int pos in chestTilePositions)
+        {
+            if (map.HasTile(pos))
+            {
+                map.SetTile(pos, null); // Hide
+            }
+
+            if (originalChestTiles.TryGetValue(pos, out TileBase tile) &&
+                dataFromTiles.TryGetValue(tile, out TileData tileData))
+            {
+                tileData.chest = false;
+            }
+        }
+    }
+
+
+
+        public bool IsChestOpenableAt(Vector3Int pos)
     {
         return currentChestTile.HasValue && currentChestTile.Value == pos;
     }

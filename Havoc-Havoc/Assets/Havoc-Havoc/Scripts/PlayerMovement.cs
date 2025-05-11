@@ -98,6 +98,12 @@ public class PlayerMovement : NetworkBehaviour
                 timerText.text = "";
 
                 currentWeapon = null;
+
+                MapManager mapManager = FindObjectOfType<MapManager>();
+                if (mapManager != null)
+                {
+                    mapManager.ActivateRandomChest();
+                }
             }
         }
         else
@@ -135,9 +141,14 @@ public class PlayerMovement : NetworkBehaviour
 
     void Move()
     {
-        if (!canMove) return;
-
-        rb.linearVelocity = moveDirection * moveSpeed;
+        if (isLocalPlayer && canMove)
+        {
+            rb.linearVelocity = moveDirection * moveSpeed;
+        }
+        else
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
     }
 
     void UpdateAnimations()
@@ -250,7 +261,11 @@ public class PlayerMovement : NetworkBehaviour
         canMove = true;
         StartWeaponTimer(timerTime);
 
-        // TODO: trigger your weapon equip logic here
+        MapManager mapManager = FindObjectOfType<MapManager>();
+        if (mapManager != null)
+        {
+            mapManager.DisableChests();
+        }
     }
 
     void UpdateWeaponSlotUI()
@@ -300,10 +315,13 @@ public class PlayerMovement : NetworkBehaviour
     [ClientRpc]
     void RpcClearWeaponUI()
     {
-        canMove = true;
-        weaponMenu.SetActive(false);
-        currentWeapon = null;
-        //weaponSlot.SetActive(false);
+        if (isLocalPlayer)
+        {
+            canMove = true;
+            weaponMenu.SetActive(false);
+            currentWeapon = null;
+            //weaponSlot.SetActive(false);
+        }
     }
 
     void StartWeaponTimer(float duration)
