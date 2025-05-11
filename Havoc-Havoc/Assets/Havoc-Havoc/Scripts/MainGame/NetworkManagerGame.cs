@@ -17,19 +17,24 @@ public class NetworkManagerGame : NetworkManager
 
     private bool isStopping = false;
 
+    public PlayerSelection playerSelection;
+
+    public GameObject knightPrefab;
+    public GameObject princessPrefab;
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        // Choose distinct spawn points when both players have joined
+        // Choose distinct spawn points
         Transform spawnPoint = null;
         if (numPlayers == 0)
         {
-            // Temporarily pick a random one for player 1, will reassign both when player 2 joins
             spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+
         }
         else if (numPlayers == 1)
         {
-            // Now both players are joining, pick distinct ones
+
             (Transform p1, Transform p2) = GetTwoDistinctSpawnPoints();
+
             foreach (var connEntry in NetworkServer.connections)
             {
                 if (connEntry.Value.identity != null)
@@ -41,24 +46,22 @@ public class NetworkManagerGame : NetworkManager
                     }
                 }
             }
+
             spawnPoint = p2;
         }
+        GameObject prefabToSpawn = numPlayers % 2 == 0 ? knightPrefab : princessPrefab;
 
-        GameObject player = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+        GameObject player = Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
         NetworkServer.AddPlayerForConnection(conn, player);
 
-
         PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
-
-
 
         if (numPlayers == 1)
         {
             player1HostID = 1;
             playerMovement.playerID = 1;
         }
-
-        if (numPlayers == 2)
+        else if (numPlayers == 2)
         {
             player2ClientID = 2;
             playerMovement.playerID = 2;
@@ -75,19 +78,18 @@ public class NetworkManagerGame : NetworkManager
                 }
             }
 
-            // THIS is the correct way
             gameManager = FindObjectOfType<GameManager>();
             if (gameManager == null)
             {
                 Debug.LogError("GameManager not found!");
                 return;
             }
+
             gameManager.StartGame(player1HostID, player2ClientID);
             FindObjectOfType<MapManager>().ActivateRandomChest();
-
         }
-
     }
+
 
     public override void OnServerDisconnect(NetworkConnectionToClient conn)
     {

@@ -746,6 +746,8 @@ namespace Mirror
             NetworkClient.RegisterHandler<NotReadyMessage>(OnClientNotReadyMessageInternal, false);
             NetworkClient.RegisterHandler<SceneMessage>(OnClientSceneInternal, false);
 
+
+
             if (playerPrefab != null)
                 NetworkClient.RegisterPrefab(playerPrefab);
 
