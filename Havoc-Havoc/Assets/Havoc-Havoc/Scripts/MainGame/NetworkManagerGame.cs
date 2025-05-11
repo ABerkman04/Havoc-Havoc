@@ -117,24 +117,46 @@ public class NetworkManagerGame : NetworkManager
 
         isStopping = true;
 
+        // Stop networking
         if (NetworkServer.active && NetworkClient.isConnected)
         {
-            NetworkManager.singleton.StopHost();
+            StopHost();
         }
         else if (NetworkClient.isConnected)
         {
-            NetworkManager.singleton.StopClient();
+            StopClient();
         }
         else if (NetworkServer.active)
         {
-            NetworkManager.singleton.StopServer();
+            StopServer();
         }
 
-        SceneManager.LoadScene(0);
+        // Reset static/shared state
+        player1HostID = 0;
+        player2ClientID = 0;
+        disconnectInfo = null;
+
+        // Destroy singleton or persistent objects (if any are marked DontDestroyOnLoad)
+        DestroyPersistentObjects();
+
+        // Reset timescale and load main scene
         Time.timeScale = 1;
+        SceneManager.LoadScene(0);
 
         isStopping = false;
     }
+    void DestroyPersistentObjects()
+    {
+        // Example cleanup - modify based on your actual persistent objects
+        var networkManager = FindObjectOfType<NetworkManager>();
+        if (networkManager != null)
+            Destroy(networkManager.gameObject);
+
+        // Add any other persistent managers here
+    }
+
+
+
 
     private (Transform, Transform) GetTwoDistinctSpawnPoints()
     {

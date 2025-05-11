@@ -20,6 +20,7 @@ public class GameManager : NetworkBehaviour
     private int player1HostID;
     private int player2ClientID;
 
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -75,6 +76,7 @@ public class GameManager : NetworkBehaviour
                 {
                     player.endText.text = "You Lose!";
                 }
+                Time.timeScale = 0;
             }
         }
 
