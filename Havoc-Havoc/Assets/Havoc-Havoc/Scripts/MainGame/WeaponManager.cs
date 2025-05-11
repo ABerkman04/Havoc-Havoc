@@ -9,4 +9,6 @@ public class WeaponManager : MonoBehaviour
     public GameObject weaponSlot;
     public Text weaponSlotText;
     public Image weaponSlotImage;
+
+    public Text timerText;
 }

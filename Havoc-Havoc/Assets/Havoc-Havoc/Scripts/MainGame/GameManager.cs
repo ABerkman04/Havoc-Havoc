@@ -68,4 +68,59 @@ public class GameManager : NetworkBehaviour
         player2Health3.enabled = newValue >= 1;
     }
 
+    [Server]
+    public void RestartRound()
+    {
+        NetworkManagerGame netManager = (NetworkManagerGame)NetworkManager.singleton;
+
+        if (netManager.spawnPoints.Length < 2)
+        {
+            Debug.LogError("Need at least 2 spawn points to restart round.");
+            return;
+        }
+
+        // Choose 2 distinct random spawn points
+        int firstIndex = Random.Range(0, netManager.spawnPoints.Length);
+        int secondIndex;
+        do
+        {
+            secondIndex = Random.Range(0, netManager.spawnPoints.Length);
+        } while (secondIndex == firstIndex);
+
+        Transform[] chosenPoints = new Transform[2];
+        chosenPoints[0] = netManager.spawnPoints[firstIndex];
+        chosenPoints[1] = netManager.spawnPoints[secondIndex];
+
+        foreach (var conn in NetworkServer.connections.Values)
+        {
+            if (conn.identity != null)
+            {
+                PlayerMovement player = conn.identity.GetComponent<PlayerMovement>();
+
+                if (player != null)
+                {
+                    // Clear weapon
+                    player.ClearWeapon();
+
+                    // Respawn at assigned spawn point
+                    int id = player.playerID - 1; // 0 or 1
+                    if (id >= 0 && id < chosenPoints.Length)
+                    {
+                        player.RpcRespawnAt(chosenPoints[id].position);
+                    }
+                }
+            }
+        }
+
+        MapManager mapManager = FindObjectOfType<MapManager>();
+        if (mapManager != null)
+        {
+            mapManager.ActivateRandomChest();
+        }
+
+        Debug.Log("Round restarted with random spawn points.");
+    }
+
+
+
 }

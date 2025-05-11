@@ -39,6 +39,14 @@ public class PlayerMovement : NetworkBehaviour
     [SyncVar]
     public int opponentID = -1;
 
+    public Text timerText;
+    private float weaponTimer = 0f;
+    private bool weaponTimerActive = false;
+    public float timerTime = 60f;
+
+    private bool canMove = true;
+
+
 
     void Start()
     {
@@ -59,6 +67,8 @@ public class PlayerMovement : NetworkBehaviour
 
             mapManager.openButton.GetComponent<Button>().onClick.AddListener(OnClickOpenChest);
             mapManager.attackButton.GetComponent<Button>().onClick.AddListener(OnClickAttack);
+
+            timerText = weaponManager.timerText;
         }
     }
 
@@ -70,8 +80,31 @@ public class PlayerMovement : NetworkBehaviour
         UpdateAnimations();
         CheckForNearbyChests();
         CheckForNearbyPlayers();
-        UpdateWeaponSlotUI();
+        if(currentWeapon == null)
+        {
+            weaponTimerActive = false;
+        }
+        if (weaponTimerActive)
+        {
+            timerText.enabled = true;
+            weaponTimer -= Time.deltaTime;
 
+            int secondsLeft = Mathf.CeilToInt(weaponTimer);
+            timerText.text = secondsLeft.ToString() + "s";
+
+            if (weaponTimer <= 0f)
+            {
+                weaponTimerActive = false;
+                timerText.text = "";
+
+                currentWeapon = null;
+            }
+        }
+        else
+        {
+            timerText.enabled = false;
+        }
+        UpdateWeaponSlotUI();
 
         if (playerID == 1)
         {
@@ -102,6 +135,8 @@ public class PlayerMovement : NetworkBehaviour
 
     void Move()
     {
+        if (!canMove) return;
+
         rb.linearVelocity = moveDirection * moveSpeed;
     }
 
@@ -137,14 +172,16 @@ public class PlayerMovement : NetworkBehaviour
 
         if (tile != null && mapManager.dataFromTiles.TryGetValue(tile, out TileData tileData))
         {
-            canOpenChest = true;
-            mapManager.openButton.SetActive(tileData.chest);
+            Vector3Int cellPos = mapManager.map.WorldToCell(transform.position);
+            if (tileData != null && tileData.chest && mapManager.IsChestOpenableAt(cellPos))
+            {
+                canOpenChest = true;
+                mapManager.openButton.SetActive(true);
+                return;
+            }
         }
-        else
-        {
-            canOpenChest = false;
-            mapManager.openButton.SetActive(false);
-        }
+        canOpenChest = false;
+        mapManager.openButton.SetActive(false);
     }
 
     void CheckForNearbyPlayers()
@@ -172,6 +209,7 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (canOpenChest && isLocalPlayer)
         {
+            canMove = false;
             weaponMenu.SetActive(true);
 
             // Pick 3 random weapons
@@ -209,6 +247,8 @@ public class PlayerMovement : NetworkBehaviour
 
         // Optionally hide the menu after selection
         weaponMenu.SetActive(false);
+        canMove = true;
+        StartWeaponTimer(timerTime);
 
         // TODO: trigger your weapon equip logic here
     }
@@ -236,7 +276,41 @@ public class PlayerMovement : NetworkBehaviour
     [Command]
     public void CmdRequestDamagePlayer(int opponentID)
     {
-        FindObjectOfType<GameManager>().DamagePlayer(opponentID);
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        gameManager.DamagePlayer(opponentID);
+
+        // Restart the round after dealing damage
+        gameManager.RestartRound();
     }
+
+
+    [ClientRpc]
+    public void RpcRespawnAt(Vector3 position)
+    {
+        transform.position = position;
+        rb.linearVelocity = Vector2.zero;
+    }
+
+    [Server]
+    public void ClearWeapon()
+    {
+        RpcClearWeaponUI();
+    }
+
+    [ClientRpc]
+    void RpcClearWeaponUI()
+    {
+        canMove = true;
+        weaponMenu.SetActive(false);
+        currentWeapon = null;
+        //weaponSlot.SetActive(false);
+    }
+
+    void StartWeaponTimer(float duration)
+    {
+        weaponTimer = duration;
+        weaponTimerActive = true;
+    }
+
 
 }

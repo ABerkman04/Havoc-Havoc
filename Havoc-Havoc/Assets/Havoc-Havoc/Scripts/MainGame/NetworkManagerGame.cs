@@ -19,23 +19,34 @@ public class NetworkManagerGame : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        int index = numPlayers; // 0 for first, 1 for second
-
-        Vector3 spawnPosition = Vector3.zero;
-        Quaternion spawnRotation = Quaternion.identity;
-
-        if (spawnPoints != null && index < spawnPoints.Length)
+        // Choose distinct spawn points when both players have joined
+        Transform spawnPoint = null;
+        if (numPlayers == 0)
         {
-            spawnPosition = spawnPoints[index].position;
-            spawnRotation = spawnPoints[index].rotation;
+            // Temporarily pick a random one for player 1, will reassign both when player 2 joins
+            spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
         }
-        else
+        else if (numPlayers == 1)
         {
-            Debug.LogWarning("Not enough spawn points! Spawning at Vector3.zero.");
+            // Now both players are joining, pick distinct ones
+            (Transform p1, Transform p2) = GetTwoDistinctSpawnPoints();
+            foreach (var connEntry in NetworkServer.connections)
+            {
+                if (connEntry.Value.identity != null)
+                {
+                    var p = connEntry.Value.identity.GetComponent<PlayerMovement>();
+                    if (p != null && p.playerID == 1)
+                    {
+                        p.RpcRespawnAt(p1.position);
+                    }
+                }
+            }
+            spawnPoint = p2;
         }
 
-        GameObject player = Instantiate(playerPrefab, spawnPosition, spawnRotation);
+        GameObject player = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
         NetworkServer.AddPlayerForConnection(conn, player);
+
 
         PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
 
@@ -72,6 +83,8 @@ public class NetworkManagerGame : NetworkManager
                 return;
             }
             gameManager.StartGame(player1HostID, player2ClientID);
+            FindObjectOfType<MapManager>().ActivateRandomChest();
+
         }
 
     }
@@ -122,5 +135,25 @@ public class NetworkManagerGame : NetworkManager
 
         isStopping = false;
     }
+
+    private (Transform, Transform) GetTwoDistinctSpawnPoints()
+    {
+        if (spawnPoints.Length < 2)
+        {
+            Debug.LogError("Need at least 2 spawn points!");
+            return (spawnPoints[0], spawnPoints[0]);
+        }
+
+        int firstIndex = Random.Range(0, spawnPoints.Length);
+        int secondIndex;
+
+        do
+        {
+            secondIndex = Random.Range(0, spawnPoints.Length);
+        } while (secondIndex == firstIndex);
+
+        return (spawnPoints[firstIndex], spawnPoints[secondIndex]);
+    }
+
 
 }
