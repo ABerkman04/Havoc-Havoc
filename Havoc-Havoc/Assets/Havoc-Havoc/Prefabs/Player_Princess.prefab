@@ -492,7 +492,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  moveSpeed: 3
+  moveSpeed: 2.5
   rb: {fileID: 7065019975078765028}
   detectionRange: 2
   weaponMenu: {fileID: 0}
@@ -517,7 +517,7 @@ MonoBehaviour:
   playerID: -1
   opponentID: -1
   timerText: {fileID: 0}
-  timerTime: 60
+  timerTime: 20
   canMove: 1
   endScreen: {fileID: 0}
   endText: {fileID: 0}

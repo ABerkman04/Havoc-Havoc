@@ -365,7 +365,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  moveSpeed: 5
+  moveSpeed: 3
   rb: {fileID: 1673021483972655503}
   detectionRange: 2
   weaponMenu: {fileID: 0}
@@ -380,6 +380,20 @@ MonoBehaviour:
   - {fileID: 4332146251749649514, guid: 0cac3d1a92b9eb041b37b57cf354985a, type: 3}
   - {fileID: 8973301148900328743, guid: 0fa10e0ba949c9949b9cce9584b7c832, type: 3}
   currentWeapon: {fileID: 0}
+  weaponSlot1: {fileID: 0}
+  weaponSlot2: {fileID: 0}
+  weaponSlot3: {fileID: 0}
+  weaponManager: {fileID: 0}
+  weaponSlot: {fileID: 0}
+  weaponSlotText: {fileID: 0}
+  weaponSlotImage: {fileID: 0}
+  playerID: -1
+  opponentID: -1
+  timerText: {fileID: 0}
+  timerTime: 15
+  canMove: 1
+  endScreen: {fileID: 0}
+  endText: {fileID: 0}
 --- !u!61 &5537630302189646860
 BoxCollider2D:
   m_ObjectHideFlags: 0
