@@ -47,6 +47,38 @@ public class GameManager : NetworkBehaviour
             player1Lives = Mathf.Max(0, player1Lives - 1);
         else if (playerNumber == 2)
             player2Lives = Mathf.Max(0, player2Lives - 1);
+
+        if (player1Lives <= 0)
+        {
+            RpcEndGame(2); // Player 2 wins
+        }
+        else if (player2Lives <= 0)
+        {
+            RpcEndGame(1); // Player 1 wins
+        }
+    }
+    [ClientRpc]
+    public void RpcEndGame(int winningPlayerID)
+    {
+        foreach (var player in FindObjectsOfType<PlayerMovement>())
+        {
+            if (player.isLocalPlayer)
+            {
+                player.canMove = false;
+                player.endScreen.SetActive(true);
+
+                if (player.playerID == winningPlayerID)
+                {
+                    player.endText.text = "You Win!";
+                }
+                else
+                {
+                    player.endText.text = "You Lose!";
+                }
+            }
+        }
+
+        Debug.Log("Game ended. Player " + winningPlayerID + " wins.");
     }
 
 

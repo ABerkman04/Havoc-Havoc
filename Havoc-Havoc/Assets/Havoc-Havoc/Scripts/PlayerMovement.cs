@@ -44,7 +44,10 @@ public class PlayerMovement : NetworkBehaviour
     private bool weaponTimerActive = false;
     public float timerTime = 60f;
 
-    private bool canMove = true;
+    public bool canMove = true;
+
+    public GameObject endScreen;
+    public Text endText;
 
 
 
@@ -69,6 +72,9 @@ public class PlayerMovement : NetworkBehaviour
             mapManager.attackButton.GetComponent<Button>().onClick.AddListener(OnClickAttack);
 
             timerText = weaponManager.timerText;
+
+            endScreen = weaponManager.endScreen;
+            endText = weaponManager.endText;
         }
     }
 
@@ -329,6 +335,7 @@ public class PlayerMovement : NetworkBehaviour
         weaponTimer = duration;
         weaponTimerActive = true;
     }
+
 
 
 }

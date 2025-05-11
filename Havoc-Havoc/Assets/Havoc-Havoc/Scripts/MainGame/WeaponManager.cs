@@ -11,4 +11,7 @@ public class WeaponManager : MonoBehaviour
     public Image weaponSlotImage;
 
     public Text timerText;
+
+    public GameObject endScreen;
+    public Text endText;
 }
