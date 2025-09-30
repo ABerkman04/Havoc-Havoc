@@ -390,7 +390,7 @@ MonoBehaviour:
   playerID: -1
   opponentID: -1
   timerText: {fileID: 0}
-  timerTime: 15
+  timerTime: 25
   canMove: 1
   endScreen: {fileID: 0}
   endText: {fileID: 0}

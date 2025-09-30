@@ -149,7 +149,7 @@ public class GameManager : NetworkBehaviour
         MapManager mapManager = FindObjectOfType<MapManager>();
         if (mapManager != null)
         {
-            mapManager.ActivateRandomChest();
+            mapManager.ActivateRandomChests();
         }
 
         Debug.Log("Round restarted with random spawn points.");

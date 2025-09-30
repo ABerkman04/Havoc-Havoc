@@ -108,7 +108,7 @@ public class PlayerMovement : NetworkBehaviour
                 MapManager mapManager = FindObjectOfType<MapManager>();
                 if (mapManager != null)
                 {
-                    mapManager.ActivateRandomChest();
+                    mapManager.ActivateRandomChests();
                 }
             }
         }

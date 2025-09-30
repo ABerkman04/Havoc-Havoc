@@ -86,7 +86,7 @@ public class NetworkManagerGame : NetworkManager
             }
 
             gameManager.StartGame(player1HostID, player2ClientID);
-            FindObjectOfType<MapManager>().ActivateRandomChest();
+            FindObjectOfType<MapManager>().ActivateRandomChests();
         }
     }
 

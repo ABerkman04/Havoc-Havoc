@@ -7,6 +7,10 @@ using Mirror;
 
 public class MapManager : NetworkBehaviour
 {
+    [Header("Chest Settings")]
+    [SerializeField]
+    private int chestsToSpawn = 1; // Number of chests to activate
+
 
     //Refrences
     public GameObject openButton;
@@ -23,7 +27,7 @@ public class MapManager : NetworkBehaviour
     public Dictionary<TileBase, TileData> dataFromTiles;
 
     private List<Vector3Int> chestTilePositions = new List<Vector3Int>();
-    private Vector3Int? currentChestTile = null;
+    private HashSet<Vector3Int> activeChestTiles = new HashSet<Vector3Int>();
 
     private Dictionary<Vector3Int, TileBase> originalChestTiles = new Dictionary<Vector3Int, TileBase>();
 
@@ -64,24 +68,22 @@ public class MapManager : NetworkBehaviour
         }
     }
     [Server]
-    public void ActivateRandomChest()
+    public void ActivateRandomChests()
     {
-        RpcActivateRandomChest();
+        RpcActivateRandomChests();
     }
 
     [ClientRpc]
-    public void RpcActivateRandomChest()
+    public void RpcActivateRandomChests()
     {
-        print(chestTilePositions.Count);
         if (chestTilePositions.Count == 0) return;
 
-        // Hide all chests (visually and logically)
+        activeChestTiles.Clear();
+
+        // Hide all chests first
         foreach (Vector3Int pos in chestTilePositions)
         {
-            if (map.HasTile(pos))
-            {
-                map.SetTile(pos, null); // Hide
-            }
+            map.SetTile(pos, null);
 
             if (originalChestTiles.TryGetValue(pos, out TileBase tile) &&
                 dataFromTiles.TryGetValue(tile, out TileData tileData))
@@ -90,21 +92,33 @@ public class MapManager : NetworkBehaviour
             }
         }
 
-        // Pick a new chest
-        int index = Random.Range(0, chestTilePositions.Count);
-        Vector3Int chosenPos = chestTilePositions[index];
-
-        // Restore visual and logic state for the active chest
-        if (originalChestTiles.TryGetValue(chosenPos, out TileBase newTile) &&
-            dataFromTiles.TryGetValue(newTile, out TileData newData))
+        // Pick N random unique positions
+        int spawnCount = Mathf.Min(chestsToSpawn, chestTilePositions.Count);
+        List<Vector3Int> shuffledPositions = new List<Vector3Int>(chestTilePositions);
+        for (int i = 0; i < shuffledPositions.Count; i++)
         {
-            map.SetTile(chosenPos, newTile); // Show only this tile
-            newData.chest = true;
-            currentChestTile = chosenPos;
+            Vector3Int temp = shuffledPositions[i];
+            int randIndex = Random.Range(i, shuffledPositions.Count);
+            shuffledPositions[i] = shuffledPositions[randIndex];
+            shuffledPositions[randIndex] = temp;
+        }
 
-            print("New chest is true at: " + chosenPos);
+        // Activate selected chests
+        for (int i = 0; i < spawnCount; i++)
+        {
+            Vector3Int chosenPos = shuffledPositions[i];
+
+            if (originalChestTiles.TryGetValue(chosenPos, out TileBase newTile) &&
+                dataFromTiles.TryGetValue(newTile, out TileData newData))
+            {
+                map.SetTile(chosenPos, newTile);
+                newData.chest = true;
+                activeChestTiles.Add(chosenPos);
+            }
         }
     }
+
+
 
     public void DisableChests()
     {
@@ -128,9 +142,10 @@ public class MapManager : NetworkBehaviour
 
 
 
-        public bool IsChestOpenableAt(Vector3Int pos)
+    public bool IsChestOpenableAt(Vector3Int pos)
     {
-        return currentChestTile.HasValue && currentChestTile.Value == pos;
+        return activeChestTiles.Contains(pos);
     }
+
 
 }
